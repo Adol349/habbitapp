@@ -1,11 +1,11 @@
 body {
     margin: 0;
     font-family: Arial;
-    background: #f4f6f3;
+    background: #FCD6E3;
 }
 
 header {
-    background: #849669;
+    background: #4A202A;
     color: white;
     padding: 15px;
     text-align: center;
@@ -24,20 +24,22 @@ header {
 
 .progress {
     height: 8px;
-    background: #dcebca;
+    background: #FCD6E3;
     border-radius: 5px;
     margin: 10px 0;
 }
 
 .bar {
     height: 100%;
-    background: #849669;
+    background: #83394A;
 }
 
 button {
     padding: 10px;
     border: none;
     border-radius: 8px;
+    margin-top: 5px;
+    background: #EEAAC3;
 }
 
 .add-btn {
@@ -47,7 +49,7 @@ button {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: #849669;
+    background: #83394A;
     color: white;
     font-size: 30px;
 }
@@ -60,4 +62,48 @@ button {
     display: flex;
     justify-content: space-around;
     padding: 10px;
+}
+
+/* МОДАЛКА */
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 300px;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+}
+
+.calendar-day {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    margin: 3px;
+    text-align: center;
+    line-height: 30px;
+    border-radius: 5px;
+    background: #FCD6E3;
+}
+
+.active-day {
+    background: #83394A;
+    color: white;
 }
