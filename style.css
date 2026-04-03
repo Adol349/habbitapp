@@ -35,11 +35,12 @@ header {
 }
 
 button {
-    padding: 10px;
+    padding: 8px;
+    margin: 3px;
     border: none;
     border-radius: 8px;
-    margin-top: 5px;
     background: #EEAAC3;
+    cursor: pointer;
 }
 
 .add-btn {
@@ -65,7 +66,6 @@ button {
 }
 
 /* МОДАЛКА */
-
 .modal {
     position: fixed;
     top: 0;
@@ -82,28 +82,27 @@ button {
     background: white;
     padding: 20px;
     border-radius: 12px;
-    width: 90%;
-    max-width: 300px;
+    width: 80%;
 }
 
-input {
-    width: 100%;
-    padding: 8px;
-    margin: 5px 0;
+/* КАЛЕНДАРЬ */
+.calendar {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
 }
 
-.calendar-day {
-    display: inline-block;
+.day {
     width: 30px;
     height: 30px;
-    margin: 3px;
-    text-align: center;
-    line-height: 30px;
-    border-radius: 5px;
-    background: #FCD6E3;
+    background: #EEAAC3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
 }
 
-.active-day {
+.active {
     background: #83394A;
     color: white;
 }
