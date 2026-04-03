@@ -1,4 +1,7 @@
 let habits = JSON.parse(localStorage.getItem("habits")) || [];
+let editIndex = null;
+
+const week = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
 
 function save() {
     localStorage.setItem("habits", JSON.stringify(habits));
@@ -17,12 +20,14 @@ function render() {
         div.innerHTML = `
             <b>${h.name}</b>
             <div>${h.done}/${h.goal}</div>
+            <div>${h.days.join(", ")}</div>
+
             <div class="progress">
                 <div class="bar" style="width:${percent}%"></div>
             </div>
 
             <button onclick="done(${i})">Сделано</button>
-            <button onclick="editHabit(${i})">Редактировать</button>
+            <button onclick="openModal(${i})">Редактировать</button>
             <button onclick="deleteHabit(${i})">Удалить</button>
         `;
 
@@ -30,20 +35,9 @@ function render() {
     });
 }
 
-function addHabit() {
-    let name = prompt("Название привычки:");
-    let goal = parseInt(prompt("Сколько раз нужно выполнить?"));
-
-    if (!name || !goal) return;
-
-    habits.push({ name, done: 0, goal });
-    save();
-    render();
-}
-
 function done(i) {
     if (habits[i].done >= habits[i].goal) {
-        alert("Хватит, ты уже выполнила привычку 😄");
+        alert("Хватит, ты уже всё сделала");
         return;
     }
 
@@ -53,91 +47,124 @@ function done(i) {
 }
 
 function deleteHabit(i) {
-    if (confirm("Удалить привычку?")) {
+    if (confirm("Удалить?")) {
         habits.splice(i, 1);
         save();
         render();
     }
 }
 
-function editHabit(i) {
-    let newName = prompt("Новое название:", habits[i].name);
-    let newGoal = parseInt(prompt("Новое количество:", habits[i].goal));
+/* МОДАЛКА */
 
-    if (!newName || !newGoal) return;
+function openModal(index = null) {
+    document.getElementById("modal").style.display = "flex";
+    editIndex = index;
 
-    habits[i].name = newName;
-    habits[i].goal = newGoal;
+    renderDays();
 
-    if (habits[i].done > newGoal) {
-        habits[i].done = newGoal;
+    if (index !== null) {
+        let h = habits[index];
+        nameInput.value = h.name;
+        goalInput.value = h.goal;
+    } else {
+        nameInput.value = "";
+        goalInput.value = "";
+    }
+}
+
+function closeModal() {
+    document.getElementById("modal").style.display = "none";
+}
+
+function renderDays(selected = []) {
+    const container = document.getElementById("days");
+    container.innerHTML = "";
+
+    week.forEach(day => {
+        const el = document.createElement("div");
+        el.className = "calendar-day";
+        el.innerText = day;
+
+        el.onclick = () => {
+            el.classList.toggle("active-day");
+        };
+
+        container.appendChild(el);
+    });
+}
+
+function getSelectedDays() {
+    return [...document.querySelectorAll(".active-day")]
+        .map(el => el.innerText);
+}
+
+function saveHabit() {
+    let name = nameInput.value.trim();
+    let goal = goalInput.value.trim();
+
+    if (!/^\d+$/.test(goal)) {
+        alert("Буквы с цифрами местами не путаем!");
+        return;
+    }
+
+    goal = Number(goal);
+
+    let days = getSelectedDays();
+
+    if (editIndex !== null) {
+        habits[editIndex] = {
+            ...habits[editIndex],
+            name,
+            goal,
+            days
+        };
+    } else {
+        habits.push({
+            name,
+            goal,
+            done: 0,
+            days
+        });
     }
 
     save();
+    closeModal();
     render();
 }
 
 function showScreen(screen) {
-    document.getElementById("mainScreen").style.display = "none";
-    document.getElementById("statsScreen").style.display = "none";
-    document.getElementById("settingsScreen").style.display = "none";
+    mainScreen.style.display = "none";
+    statsScreen.style.display = "none";
+    settingsScreen.style.display = "none";
 
-    if (screen === "main") {
-        document.getElementById("title").innerText = "Мои привычки";
-        document.getElementById("mainScreen").style.display = "block";
-    }
-
+    if (screen === "main") mainScreen.style.display = "block";
     if (screen === "stats") {
-        document.getElementById("title").innerText = "Статистика";
-        document.getElementById("statsScreen").style.display = "block";
+        statsScreen.style.display = "block";
         renderStats();
     }
-
     if (screen === "settings") {
-        document.getElementById("title").innerText = "Настройки";
-        document.getElementById("settingsScreen").style.display = "block";
-        renderSettings();
+        settingsScreen.style.display = "block";
+        settingsScreen.innerHTML = `
+            <button onclick="resetAll()">Сбросить всё</button>
+        `;
     }
 }
 
 function renderStats() {
-    const container = document.getElementById("statsScreen");
+    let html = "<h3>Календарь</h3>";
 
-    if (habits.length === 0) {
-        container.innerHTML = "Нет данных";
-        return;
-    }
+    habits.forEach(h => {
+        html += `<p>${h.name}: ${h.done}/${h.goal}</p>`;
+    });
 
-    let total = habits.reduce((sum, h) => sum + h.goal, 0);
-    let done = habits.reduce((sum, h) => sum + h.done, 0);
-
-    let percent = Math.round((done / total) * 100);
-
-    container.innerHTML = `
-        <h3>Общий прогресс</h3>
-        <p>${done} из ${total}</p>
-        <div class="progress">
-            <div class="bar" style="width:${percent}%"></div>
-        </div>
-        <p>${percent}% выполнено</p>
-    `;
-}
-
-function renderSettings() {
-    const container = document.getElementById("settingsScreen");
-
-    container.innerHTML = `
-        <h3>Настройки</h3>
-        <button onclick="resetAll()">Сбросить все привычки</button>
-    `;
+    statsScreen.innerHTML = html;
 }
 
 function resetAll() {
-    if (confirm("Удалить ВСЕ привычки?")) {
+    if (confirm("ВСЁ удалить?")) {
         habits = [];
         save();
         render();
-        showScreen('main');
     }
 }
 
