@@ -1,6 +1,6 @@
 let habits = JSON.parse(localStorage.getItem("habits")) || [];
-let editIndex = null;
 let selectedDays = [];
+let editIndex = null;
 
 const week = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
 
@@ -22,44 +22,42 @@ function render() {
             <b>${h.name}</b>
             <div>${h.done}/${h.goal}</div>
 
-            <div class="calendar">
-                ${week.map((d, idx)=>`
-                    <div class="day ${h.days.includes(idx) ? 'active' : ''}">${d}</div>
-                `).join("")}
+            <div>
+                ${h.days.map(d => week[d]).join(", ") || "Без расписания"}
             </div>
 
             <div class="progress">
                 <div class="bar" style="width:${percent}%"></div>
             </div>
 
-            <button onclick="done(${i})">Сделано</button>
-            <button onclick="openEdit(${i})">Редактировать</button>
-            <button onclick="deleteHabit(${i})">Удалить</button>
+            <button onclick="done(${i})">✔</button>
+            <button onclick="editHabit(${i})">✏️</button>
+            <button onclick="deleteHabit(${i})">🗑</button>
         `;
 
         container.appendChild(div);
     });
 }
 
-function openModal(edit=false, i=null) {
-    document.getElementById("modal").style.display = "flex";
+function openModal(edit=false, index=null) {
+    document.getElementById("modal").classList.add("active");
 
     const daysDiv = document.getElementById("days");
     daysDiv.innerHTML = "";
 
     selectedDays = [];
 
-    week.forEach((d, idx) => {
-        let btn = document.createElement("button");
+    week.forEach((d, i) => {
+        const btn = document.createElement("button");
         btn.innerText = d;
 
         btn.onclick = () => {
-            if (selectedDays.includes(idx)) {
-                selectedDays = selectedDays.filter(x => x !== idx);
-                btn.style.background = "#EEAAC3";
+            if (selectedDays.includes(i)) {
+                selectedDays = selectedDays.filter(x => x !== i);
+                btn.classList.remove("day-active");
             } else {
-                selectedDays.push(idx);
-                btn.style.background = "#83394A";
+                selectedDays.push(i);
+                btn.classList.add("day-active");
             }
         };
 
@@ -67,25 +65,26 @@ function openModal(edit=false, i=null) {
     });
 
     if (edit) {
-        editIndex = i;
-        let h = habits[i];
-        document.getElementById("nameInput").value = h.name;
-        document.getElementById("goalInput").value = h.goal;
+        editIndex = index;
+        let h = habits[index];
+
+        nameInput.value = h.name;
+        goalInput.value = h.goal;
         selectedDays = [...h.days];
     } else {
         editIndex = null;
-        document.getElementById("nameInput").value = "";
-        document.getElementById("goalInput").value = "";
+        nameInput.value = "";
+        goalInput.value = "";
     }
 }
 
 function closeModal() {
-    document.getElementById("modal").style.display = "none";
+    document.getElementById("modal").classList.remove("active");
 }
 
 function saveHabit() {
-    let name = document.getElementById("nameInput").value;
-    let goal = document.getElementById("goalInput").value;
+    let name = nameInput.value;
+    let goal = goalInput.value;
 
     if (!/^\d+$/.test(goal)) {
         alert("Буквы с цифрами местами не путаем!");
@@ -95,9 +94,12 @@ function saveHabit() {
     goal = Number(goal);
 
     if (editIndex !== null) {
-        habits[editIndex].name = name;
-        habits[editIndex].goal = goal;
-        habits[editIndex].days = selectedDays;
+        habits[editIndex] = {
+            ...habits[editIndex],
+            name,
+            goal,
+            days: selectedDays
+        };
     } else {
         habits.push({
             name,
@@ -114,7 +116,7 @@ function saveHabit() {
 
 function done(i) {
     if (habits[i].done >= habits[i].goal) {
-        alert("Ты уже всё сделала");
+        alert("Хватит, ты уже сделала");
         return;
     }
 
@@ -124,14 +126,14 @@ function done(i) {
 }
 
 function deleteHabit(i) {
-    if (confirm("Удалить?")) {
-        habits.splice(i,1);
+    if (confirm("Удалить привычку?")) {
+        habits.splice(i, 1);
         save();
         render();
     }
 }
 
-function openEdit(i) {
+function editHabit(i) {
     openModal(true, i);
 }
 
